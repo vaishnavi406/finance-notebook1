@@ -1,0 +1,13 @@
+# Python Virtual Environment
+venv/
+/backend/venv/
+
+# Python Cache
+__pycache__/
+
+# Old React Frontend (IMPORTANT)
+frontend/
+
+# Editor & OS files
+.vscode/
+.DS_Store
