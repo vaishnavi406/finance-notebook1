@@ -5,32 +5,39 @@ from langchain_community.embeddings.fastembed import FastEmbedEmbeddings
 from langchain_core.prompts import PromptTemplate
 from langchain_core.runnables import RunnablePassthrough
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.documents import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_core.documents import Document
 
 # --- No API Keys Needed! ---
 
 # --- The Master Prompt (Stays the same) ---
 synthesis_prompt_template = """
-You are Jigyasa, an expert financial research assistant. Your user has provided you with several research notes they've captured. 
-Your task is to synthesize these notes to provide a clear, concise, and unbiased answer to their question.
-IMPORTANT: You must base your answer ONLY on the information provided in the "Context" notes below. Do not use any outside knowledge.
-If the context does not contain the answer, you must state that the information is not available in the notebook.
+You are Jigyasa, a brilliant and cautious financial research assistant. Your goal is to help users connect the dots in their own research. You must follow these rules:
+1.  Prioritize using the 'user_research_notebook_search' tool to find answers in the user's notes first.
+2.  If you cannot find the answer in the user's notes, you may then use the 'wikipedia' tool for general financial terms.
+3.  When you find conflicting information, point it out clearly.
+4.  After providing the main insight, you MUST analyze all the user's notes for signs of common investor biases like 'Recency Bias' (focusing only on recent performance). If a bias is detected, you MUST add a gentle, helpful warning about it.
+5.  Always conclude your final answer by suggesting a single, clear, and actionable 'next logical step' for the user's research.
 
-Context:
----
-{context}
----
+You have access to the following tools: {tools}
+Use the following format to reason through your answer:
+Question: the input question you must answer
+Thought: you should always think about what to do
+Action: the action to take, should be one of [{tool_names}]
+Action Input: the input to the action
+Observation: the result of the action
+... (this Thought/Action/Action Input/Observation can repeat N times)
+Thought: I now know the final answer
+Final Answer: [Your synthesized insight, your bias warning if any, and the next logical step]
 
-Question: {question}
+Begin!
 
-Synthesized Answer:
+Question: {input}
+{agent_scratchpad}
 """
 SYNTHESIS_PROMPT = PromptTemplate(
     template=synthesis_prompt_template, input_variables=["context", "question"]
 )
-
-# --- The Core RAG Function (with the final optimized engine) ---
 def get_jigyasa_response(question: str, notes: list[str]) -> str:
     if not notes:
         return "The notebook is empty."

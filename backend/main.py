@@ -36,26 +36,14 @@ class Question(BaseModel):
 def add_note(note: Note):
     """Receives text from the bookmarklet and adds it to our notebook."""
     print(f"Received note: {note.text[:50]}...")
-    notes_db.append(note.text)
     return {"status": "success", "note_count": len(notes_db)}
 
-
-
-# --- THIS IS THE NEW ENDPOINT FOR THE CHAT UI ---
-@app.post("/ask")
-def ask_question(question: Question):
-    """Receives a question, uses the RAG pipeline to get an answer, and returns it."""
-    print(f"Received question: {question.question}")
-    if not notes_db:
-        return {"answer": "My notebook is empty! Please add some research notes using the bookmarklet first."}
-    
-    answer = get_jigyasa_response(question=question.question, notes=notes_db)
-    print(f"Sending answer: {answer[:50]}...")
-    return {"answer": answer}
 @app.get("/notes")
 def get_notes():
     """A simple endpoint to view all the notes currently in the notebook."""
     return {"notes": notes_db}
+
+# --- THIS IS THE NEW ENDPOINT FOR THE CHAT UI ---
 @app.post("/ask")
 def ask_question(question: Question):
     """Receives a question, uses the RAG pipeline to get an answer, and returns it."""
